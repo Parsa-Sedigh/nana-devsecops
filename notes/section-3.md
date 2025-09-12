@@ -1,3 +1,5 @@
+# 3 - Application Vulnerability Scanning
+
 ## xx-3 - Secret Scanning with GitLeaks - Local Environment
 Devops approaches security in a non-traditional way. Security of a devops workflow is not centralized. Securing a devops workflow is
 often **distributed** among various tools and processes. So rather than doing it at one time and as late as possible which is the
@@ -31,3 +33,24 @@ With this, we can avoid security issue from landing in the code in an earlier st
 NOTE: We want to shift security checks as early as possible in the developer workflow.
 
 ## xx-5 - False Positives & Fixing Security Vulnerabilities
+- False positive: The tool thinks there's a problem, but really it is not.
+- False negative: the tool doesn't catch the problem.
+
+We don't want to fail the build in gitleaks job because of false-positives, so add `allow_failure: true` in the ci.
+
+To set pipeline ci/cd vars, go to settings>ci/cd>variables.
+
+When you leak some secret and later find out about it, quickly change that secret and make sure to not leak it again by removing it completely.
+
+## xx-6 - Integrate SAST Scans in Release Pipeline
+We scanned the code for hard-coded credentials, but is the code itself secure?
+
+We validate the code for security vulnerabilities using SAST(static application security testing).
+
+Nodejs has njsscan tool.
+
+Whenever gitlab starts a job, it mounts the entire application folder to the entrypoint of the container used for executing the job.
+
+We can fail the build based on severity of security issues.
+
+Oftentimes we wanna combine multiple tools for security scanning to make sure we don't miss any issues.
