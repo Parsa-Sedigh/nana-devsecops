@@ -13,5 +13,8 @@ from all the previous jobs. So we have access to all the prev artifacts in our c
 
 In gitlab, jobs in the same stage, run in parallel.
 
-
 ## 4 - Fix Security Issues Discovered in the DevSecOps Pipeline
+Do not fail the pipeline until the security analysis tools are set up correctly and we have automatic uploading of the scannings and
+have the dashboards available for devs.
+
+Use parameterized vals or placeholders in sql queries to mitigate sql injection.
