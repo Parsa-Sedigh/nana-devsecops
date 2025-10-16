@@ -6,5 +6,12 @@ Use "job artifacts" to export & save security report files.
 Pull defect dojo image.
 
 ## 3 - Automate Uploading Security Scan Results to DefectDojo
+We write a python script to upload various scan reports to defectdojo.
+
+When you create artifacts in gitlab pipeline, it saves the artifacts and in the following jobs, it automatically downloads any artifacts
+from all the previous jobs. So we have access to all the prev artifacts in our curr job.
+
+In gitlab, jobs in the same stage, run in parallel.
+
 
 ## 4 - Fix Security Issues Discovered in the DevSecOps Pipeline
