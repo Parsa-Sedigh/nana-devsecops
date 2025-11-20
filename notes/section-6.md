@@ -86,4 +86,50 @@ First open the application port on the security group. Then access it in browser
 Instances > security > security group > edit inbound rules > add new inbound rule > port range: port 3000 > allow from anywhere.
 
 ## 6 - Configure Self-Managed GitLab Runner for Pipeline Jobs
+We want to use an ec2 server for our **own** self-managed gitlab runner(instead of using a shared runner provided by gitlab).
+
+We give ec2 instance an aws role that will be able to authenticate with aws account and access any services within aws that we will need inside the pipeline.
+This means we don't need a separate aws **user credentials** because we're gonna use an aws **role**.
+
+### Create ec2 instance for self-hosted runner
+Launch a new ec2 instance.
+
+Name: gitlab-runner
+
+We need more resources for things like building docker images, choose at least t2.medium or better with t2.large
+
+Storage: at least 16GB, for being safe: 20GB
+
+Now we wanna turn this ec2 instance into a gitlab runner. First we have to install gitlab runner there and then register it with the project.
+
+### Install & register gitlab runner
+```shell
+# limit the access to the ssh key file of the ec2 instance:
+chmod 400 <path to download ssh key file>.pem
+
+ssh -i <path to download ssh key file>.pem ubuntu@<instance ip>
+
+sudo apt update
+```
+
+To install gitlab runner, in settings>CI/CD of gitlab > Runners > New project runner.
+
+Then use `ec2, shell` as runner tags.
+
+Now to install runner on the ec2:
+```shell
+sudo curl -L "https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.deb.sh" | sudo bash
+
+sudo apt install gitlab-runner
+
+# register runner with our project
+sudo gitlab-runner register
+  --url https://gitlab.com
+  -- token <token> -- <token> is unique per runner. Whenever creating a new runner, it gets a token
+```
+
+![](img/6-6-1.png)
+
+Now you should see the runner in `Assigned project runners`.
+
 ## 7 - Build Application Images on Self-Managed Runner, Leverage Docker Caching
