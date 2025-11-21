@@ -133,3 +133,62 @@ sudo gitlab-runner register
 Now you should see the runner in `Assigned project runners`.
 
 ## 7 - Build Application Images on Self-Managed Runner, Leverage Docker Caching
+### Run build job on self-managed runner to leverage caching
+```shell
+docker
+sudo apt install docker.io
+aws
+sudo apt install awscli
+
+# with docker, we need to add a user to docker group so that it can execute docker cmds without using `sudo`
+# The `ubuntu` user needs to run docker commands:
+sudo usermod -aG docker ubuntu
+
+# Add gitlab runner user to the docker group, because gitlab runner user which was created when we installed gitlab runner,
+# will need to run docker cmds:
+sudo usermod -aG docker gitlab-runner
+```
+
+### docker image layer caching
+Gonna do 2 improvements:
+1. replace dind running env with executing docker **directly** on the server
+2. when using docker or dind executors: in build_image job logs, it takes 7-8 mins because everytime, every single layer in the image is created from scratch. Because the job env
+that runs the job is always a new docker container, so each time the job runs in a separate and isolated container. So there's no leftover from
+prev job, so it starts from a clean state which has pros & cons. **Pro: We dont have any leftovers, Con: we can't leverage caching. We want to leverage caching
+using shell executor.** This is because shell executor runs jobs directly on the server, **so the image stays on the server**.
+So on the next run, it already has the img from prev build.
+
+Docker by default caches each layer, saved on local filesystem
+
+### install docker and aws on runner
+
+### Adjust build_image job
+We wanna run build_image job on our self runner instead of gitlab shared runners. **We can specify each job to run on which runner.**
+
+### Troubleshooting tips
+```shell
+# Check available space
+df -h
+
+# Intermediary and dangling images can be deleted with: 
+docker image prune
+```
+
+If we cancel a running job on our self-managed runner, and then retry, it would go into a pending state. The gitlab runner crashes when we cancel the job.
+We can fix the job not being picked up by self-managed runner by restarting runner:
+```shell
+sudo gitlab-runner start
+sudo gitlab-runner status
+
+# Instead, you can run this. THe & doesnt block the terminal. The run cmd is faster because it proactively tells runner to go look if there are any jobs
+# to be picked.
+sudo gitlab-runner run &
+```
+
+### Docker using cache
+
+### Free up disk space
+Currently, the app ec2 server pulls the new images from ecr and it went out of space. So we need to free up space by removing dangling images:
+```shell
+docker rmi <img id>
+```
